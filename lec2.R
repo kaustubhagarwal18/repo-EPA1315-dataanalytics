@@ -19,4 +19,8 @@ survey_xlsx = read.xlsx("survey_xls.xlsx",header=1,sheetIndex=1)
 #what the data set contains
 str(survey_tab)
 # more detailed summary
-summary(survey)
+summary(survey_tab)
+
+#write data
+write.table(survey_tab,"survey_written.csv",sep=',')
+
