@@ -29,6 +29,7 @@ ggplot() +
        x = "", y = "") 
 theme_void()
 
+
 proj4string(lsoas)
 
 #Load railwayTrack shapefile and plot it
@@ -93,7 +94,7 @@ ggsave("Manchester_polygons_all.png")                       # save image as png 
 ggsave("Manchester_polygons_all.pdf")
 
   # fortify transforms this list of polygons into a data.frame
-  lsoas_df1 = fortify(lsoas, region = "LSOA11CD")          
+  lsoas_df1 = fortify(lsoas, region = "LSOA11CD")     # as this contains the common entries     
   head(lsoas_df1)
   
   tab_path = 'epa1315_19_data/Manchester/Manchester/'            # set the path
@@ -115,7 +116,8 @@ ggsave("Manchester_polygons_all.pdf")
   merged_Data1 = merge(lsoas_df1, lsoa_orig_sub1, by.x = "id", by.y ="GeographyCode") # merge polygons, csv, 
   merged_Data2 = merge(lsoas_df1, lsoa_orig_sub2, by.x = "id", by.y ="GeographyCode") # merge polygons, csv, 
 
-# notice the names have been appended
+
+  # notice the names have been appended
 
 head(merged_Data1)
 head(merged_Data2)
@@ -124,7 +126,6 @@ head(merged_Data2)
 merged_Data1[, "Popular_religion"] <- colnames(merged_Data1[,8:16])[apply(merged_Data1[,8:16],1,which.max)]
 merged_Data2[, "Popular_occupation"] <- colnames(merged_Data2[,8:16])[apply(merged_Data2[,8:16],1,which.max)]
 
-##################################################
 #choropleths
 
 # coropleth with popular religion per county
@@ -160,3 +161,36 @@ ggplot() +
        x = "", y = "") + 
   theme_void()
 ggsave("Manchester_occupation.png")
+
+cent = gCentroid(lsoas, byid=TRUE)
+
+plot(cent)
+
+los_dir_namp = paste(los_dir, "NamedPlace.shp", sep = "")
+namp = readOGR(los_dir_namp)
+
+
+head(impB@data)
+proj4string(namp)
+
+buf = gBuffer(namp, width = 450, byid = TRUE)
+head(buf@data)
+namp_df = data.frame(namp)
+head(namp_df)
+
+
+
+ggplot() +
+  # Add wood land shown in green 
+  geom_polygon(data = woodL, aes(x = long, y = lat, group = group), fill ="green", size = 0) +
+  # Add surface water shown in blue
+  geom_polygon(data = surW, aes(x = long, y = lat, group = group), color ="blue") +
+  # Add LSOAs but merged with population this time
+  geom_polygon(data = buf, aes(x = long, y = lat, group = group), fill ="#F9DA95", color = "white", size = 0.25, alpha = 0.4) +
+  geom_point(data = namp_df, aes(x = coords.x1, y = coords.x2, fill =classifica), color = "black", size = 0.1) +
+  # Impose same size for units across axes
+  coord_fixed() +
+  # Add your titles
+  labs(title = "Woodland,surfaceWater corresponding to population of the city of Manchester",
+       x = "", y = "") + 
+  theme_void()
